@@ -7,33 +7,17 @@ class Program
 {
     static void Main()
     {
-        // Set up the TCP listener on localhost and port 8888
-        TcpListener listener = new TcpListener(IPAddress.Parse("127.0.0.1"), 8888);
-        listener.Start();
-        
+        UdpClient udpClient = new UdpClient(8888);
+        IPEndPoint remoteEP = new IPEndPoint(IPAddress.Any, 0);
+
         Console.WriteLine("Waiting for a connection...");
-
-        // Accept the client connection
-        TcpClient client = listener.AcceptTcpClient();
-        Console.WriteLine("Connected!");
-
-        NetworkStream stream = client.GetStream();
 
         while (true)
         {
-            byte[] buffer = new byte[1024];
-            int bytesRead = stream.Read(buffer, 0, buffer.Length);
+            byte[] receiveBytes = udpClient.Receive(ref remoteEP);
+            string receivedData = Encoding.UTF8.GetString(receiveBytes);
 
-            if (bytesRead == 0)
-            {
-                break;
-            }
-
-            string data = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-            Console.WriteLine($"Received: {data}");
+            Console.WriteLine($"Received: {receivedData}");
         }
-
-        client.Close();
-        listener.Stop();
     }
 }
